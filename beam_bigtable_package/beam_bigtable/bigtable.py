@@ -196,19 +196,29 @@ class _BigTableSource(iobase.BoundedSource):
                 return
 
     def _row_set(self, row_set):
-        """
-        [an auxiliary method] Creates a local deep copy of of the input RowSet reference
+        """ [an auxiliary method] Creates a local deep copy of of the input RowSet reference
+
         :param row_set: [RowSet()] Reference to a RowSet() class
         :return: New RowSet() with non-overlapping row ranges
         """
         if row_set is None:
             return None
         new_set = RowSet()
-        for sets in row_set.row_keys:
-            new_set.add_row_key(sets)
+        # for sets in row_set.row_keys:
+        #     new_set.add_row_key(sets)
         for sets in row_set.row_ranges:
             new_set.add_row_range(sets)
         self._defragment(new_set.row_ranges)
+
+        keys = list(dict.fromkeys(row_set.row_keys)) # This removes duplicate keys, if any
+        for key in keys:
+            found = False
+            for row_range in new_set.row_ranges:
+                if row_range.start_key <= key <= row_range.end.key: # Check whether the key is contained in the ranges
+                    found = True
+            if not found:
+                new_set.add_row_key(key)
+
         return new_set
 
     def estimate_size(self):
