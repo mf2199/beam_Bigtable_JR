@@ -2,9 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4f2f17ed-a6f4-4850-9f6c-c6a64d21525a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/example_bigtable_beam.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/example_bigtable_beam.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py" beforeDir="false" afterPath="$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_split.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/beam_bigtable_package/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/beam_bigtable_package/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,10 +17,57 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/test_check_bytes.py">
+        <entry file="file://$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="11" column="65" selection-start-line="11" selection-start-column="65" selection-end-line="11" selection-end-column="65" />
+            <state relative-caret-position="381">
+              <caret line="124" column="58" selection-start-line="124" selection-start-column="58" selection-end-line="124" selection-end-column="58" />
+              <folding>
+                <element signature="n#!!doc" />
+                <element signature="e#785#1587#1" />
+                <element signature="e#1588#1626#0" expanded="true" />
+                <element signature="e#16377#16959#0" />
+                <element signature="e#17001#19957#0" />
+                <element signature="e#20004#21349#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/apache_beam/io/range_trackers.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="447">
+              <caret line="190" column="6" selection-start-line="190" selection-start-column="6" selection-end-line="190" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/table.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1277">
+              <caret line="558" column="18" selection-start-line="558" selection-start-column="18" selection-end-line="558" selection-end-column="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/row_set.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="447">
+              <caret line="60" column="8" selection-start-line="60" selection-start-column="8" selection-end-line="60" selection-end-column="8" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/beam_bigtable_package/setup.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="594">
+              <caret line="18" column="10" lean-forward="true" selection-start-line="18" selection-start-column="10" selection-end-line="18" selection-end-column="10" />
+              <folding>
+                <element signature="e#47#56#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -39,14 +88,16 @@
       <list>
         <option value="$PROJECT_DIR$/bigtable_timeout.py" />
         <option value="$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/table.py" />
+        <option value="$PROJECT_DIR$/beam_bigtable_package/setup.py" />
+        <option value="$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-259" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="5750" />
+    <option name="y" value="-10" />
+    <option name="width" value="3860" />
+    <option name="height" value="2127" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -57,8 +108,25 @@
         <subPane>
           <expand>
             <path>
-              <item name="example_bigtable_beam" type="b2602c69:ProjectViewProjectNode" />
-              <item name="example_bigtable_beam" type="462c0819:PsiDirectoryNode" />
+              <item name="beam_bigtable" type="b2602c69:ProjectViewProjectNode" />
+              <item name="beam_bigtable" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="beam_bigtable" type="b2602c69:ProjectViewProjectNode" />
+              <item name="beam_bigtable" type="462c0819:PsiDirectoryNode" />
+              <item name="beam_bigtable_package" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="beam_bigtable" type="b2602c69:ProjectViewProjectNode" />
+              <item name="beam_bigtable" type="462c0819:PsiDirectoryNode" />
+              <item name="beam_bigtable_package" type="462c0819:PsiDirectoryNode" />
+              <item name="beam_bigtable" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="beam_bigtable" type="b2602c69:ProjectViewProjectNode" />
+              <item name="beam_bigtable" type="462c0819:PsiDirectoryNode" />
+              <item name="beam_bigtable_package" type="462c0819:PsiDirectoryNode" />
+              <item name="dist" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -68,8 +136,9 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../beam" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -96,6 +165,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bigtable_timeout.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -121,8 +191,13 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1551192203758</updated>
+      <workItem from="1554679529603" duration="924000" />
+      <workItem from="1554680461735" duration="19285000" />
     </task>
     <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="20209000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -134,10 +209,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="5750" y="-10" width="3860" height="2127" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49819493" visible="true" weight="0.25799572" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49819493" visible="true" weight="0.13024987" />
       <window_info id="Structure" order="1" sideWeight="0.50180507" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -147,16 +222,24 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32936078" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.3726977" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.3296588" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.24724409" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32936078" />
+      <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="12" />
+      <window_info anchor="bottom" id="Statistic" order="13" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="R Graphics" order="3" />
       <window_info anchor="right" id="R Packages" order="4" />
+      <window_info anchor="right" id="SciView" order="5" />
+      <window_info anchor="right" id="Database" order="6" />
     </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -186,59 +269,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/api_core/gapic_v1/method.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="44" selection-start-line="44" selection-end-line="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/batcher.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="359">
-          <caret line="150" selection-start-line="150" selection-end-line="150" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/api_core/retry.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="178" selection-start-line="178" selection-end-line="178" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable_v2/gapic/bigtable_client.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="166" column="13" selection-start-line="166" selection-start-column="13" selection-end-line="166" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/client.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="228" column="8" selection-start-line="228" selection-start-column="8" selection-end-line="228" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/instance.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="573" column="17" selection-start-line="573" selection-start-column="17" selection-end-line="573" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/api_core/gapic_v1/method.py" />
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/batcher.py" />
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/api_core/retry.py" />
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable_v2/gapic/bigtable_client.py" />
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/client.py" />
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/instance.py" />
     <entry file="file://C:/Python27/Lib/functools.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
           <caret line="32" selection-start-line="32" selection-end-line="32" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/table.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="19" column="35" selection-start-line="19" selection-start-column="35" selection-end-line="19" selection-end-column="35" />
         </state>
       </provider>
     </entry>
@@ -254,8 +294,82 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test_check_bytes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="65" selection-start-line="11" selection-start-column="65" selection-end-line="11" selection-end-column="65" />
+        <state relative-caret-position="693">
+          <caret line="21" column="4" selection-start-line="21" selection-start-column="4" selection-end-line="21" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/apache_beam/transforms/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="364" column="6" selection-start-line="364" selection-start-column="6" selection-end-line="364" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/beam_bigtable_package/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="594">
+          <caret line="18" column="10" lean-forward="true" selection-start-line="18" selection-start-column="10" selection-end-line="18" selection-end-column="10" />
+          <folding>
+            <element signature="e#47#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2018.3/system/python_stubs/643279865/math.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="164" column="4" selection-start-line="164" selection-start-column="4" selection-end-line="164" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/table.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1277">
+          <caret line="558" column="18" selection-start-line="558" selection-start-column="18" selection-end-line="558" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/apache_beam/io/range_trackers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="447">
+          <caret line="190" column="6" selection-start-line="190" selection-start-column="6" selection-end-line="190" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/__version__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="99">
+          <caret line="3" column="43" lean-forward="true" selection-start-line="3" selection-start-column="43" selection-end-line="3" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/row_set.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="447">
+          <caret line="60" column="8" selection-start-line="60" selection-start-column="8" selection-end-line="60" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2018.3/system/python_stubs/643279865/__builtin__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="3402" column="8" selection-start-line="3402" selection-start-column="8" selection-end-line="3402" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="124" column="58" selection-start-line="124" selection-start-column="58" selection-end-line="124" selection-end-column="58" />
+          <folding>
+            <element signature="n#!!doc" />
+            <element signature="e#785#1587#1" />
+            <element signature="e#1588#1626#0" expanded="true" />
+            <element signature="e#16377#16959#0" />
+            <element signature="e#17001#19957#0" />
+            <element signature="e#20004#21349#0" />
+          </folding>
         </state>
       </provider>
     </entry>
