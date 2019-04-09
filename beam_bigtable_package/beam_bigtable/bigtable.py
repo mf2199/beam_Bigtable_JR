@@ -82,53 +82,58 @@ except ImportError:
 __all__ = ['WriteToBigTable', 'ReadFromBigTable', 'BigTableSource']
 
 
-class _OverlapRowSet(RowSet):
-    def __init__(self):
-        super(self.__class__, self).__init__()
-        self.row_keys = []
-        self.row_ranges = []
-
-    def _defragment_sorted(self):
-        length = len(self.row_ranges)
-        if length < 2:
-            return
-        for i in range(1, length):
-            if self.row_ranges[i-1].end_key >= self.row_ranges[i].start_key:
-                self.row_ranges[i].start_key = self.row_ranges[i-1].start_key
-                del self.row_ranges[i-1]
-                self._defragment_sorted()
-                return
-
-    def add_row_range(self, row_range):
-        # overlaped = True
-        #
-        # def overlap(start1, end1, start2, end2):
-        #     overlaps = start1 <= end2 and end1 >= start2
-        #     if not overlaps:
-        #         return False, None, None
-        #     return True, min(start1, start2), max(end1, end2)
-        # for (i, ranges) in enumerate(self.row_ranges):
-        #     over = overlap(row_range.start_key, row_range.end_key, ranges.start_key, ranges.end_key)
-        #     if over[0]:
-        #         self.row_ranges[i] = RowRange(over[1], over[2])
-        #         overlaped = False
-        #         break
-        # if overlaped:
-        #     self.row_ranges.append(row_range)
-
-        # for i, rng in enumerate(self.row_ranges):
-        #     if row_range.start_key <= rng.end_key and row_range.end_key >= rng.start_key:
-        #         self.row_ranges[i] = RowRange(min(row_range.start_key, rng.start_key),
-        #                                       max(row_range.end_key, rng.end_key))
-        #         return
-        self.row_ranges.append(row_range)
-        self.row_ranges.sort(key=lambda tup: tup.start_key)
-        self._defragment_sorted()
-
-    def add_row_range_from_keys(self, start_key=None, end_key=None, start_inclusive=True, end_inclusive=False):
-        # row_range = RowRange(start_key, end_key, start_inclusive, end_inclusive)
-        # self.add_row_range(row_range)
-        self.add_row_range(RowRange(start_key, end_key, start_inclusive, end_inclusive))
+# class _OverlapRowSet(RowSet):
+#     def __init__(self):
+#         super(self.__class__, self).__init__()
+#         self.row_keys = []
+#         self.row_ranges = []
+#
+#     def _defragment(self):
+#         length = len(self.row_ranges)
+#         if length < 2:
+#             return
+#         for i in range(1, length):
+#             if self.row_ranges[i-1].start_key > self.row_ranges[i].start_key:
+#                 # If the list is not sorted, sort it first
+#                 self.row_ranges.sort(key=lambda tup: tup.start_key)
+#                 self._defragment()
+#                 return
+#             elif self.row_ranges[i-1].end_key >= self.row_ranges[i].start_key:
+#                 self.row_ranges[i].start_key = self.row_ranges[i-1].start_key
+#                 del self.row_ranges[i-1]
+#                 self._defragment()
+#                 return
+#
+#     def add_row_range(self, row_range):
+#         # overlaped = True
+#         #
+#         # def overlap(start1, end1, start2, end2):
+#         #     overlaps = start1 <= end2 and end1 >= start2
+#         #     if not overlaps:
+#         #         return False, None, None
+#         #     return True, min(start1, start2), max(end1, end2)
+#         # for (i, ranges) in enumerate(self.row_ranges):
+#         #     over = overlap(row_range.start_key, row_range.end_key, ranges.start_key, ranges.end_key)
+#         #     if over[0]:
+#         #         self.row_ranges[i] = RowRange(over[1], over[2])
+#         #         overlaped = False
+#         #         break
+#         # if overlaped:
+#         #     self.row_ranges.append(row_range)
+#
+#         # for i, rng in enumerate(self.row_ranges):
+#         #     if row_range.start_key <= rng.end_key and row_range.end_key >= rng.start_key:
+#         #         self.row_ranges[i] = RowRange(min(row_range.start_key, rng.start_key),
+#         #                                       max(row_range.end_key, rng.end_key))
+#         #         return
+#         self.row_ranges.append(row_range)
+#         # self.row_ranges.sort(key=lambda tup: tup.start_key)
+#         self._defragment()
+#
+#     def add_row_range_from_keys(self, start_key=None, end_key=None, start_inclusive=True, end_inclusive=False):
+#         # row_range = RowRange(start_key, end_key, start_inclusive, end_inclusive)
+#         # self.add_row_range(row_range)
+#         self.add_row_range(RowRange(start_key, end_key, start_inclusive, end_inclusive))
 
 
 class _BigTableSource(iobase.BoundedSource):
@@ -150,7 +155,7 @@ class _BigTableSource(iobase.BoundedSource):
         self.sample_row_keys = None
         self.table = None
         self.read_row = Metrics.counter(self.__class__.__name__, 'read_row')
-        self.row_set_overlap = self._overlap_row_set(self.beam_options['row_set'])
+        self.row_set = self._row_set(self.beam_options['row_set'])
 
     def __getstate__(self):
         return self.beam_options
@@ -160,7 +165,7 @@ class _BigTableSource(iobase.BoundedSource):
         self.sample_row_keys = None
         self.table = None
         self.read_row = Metrics.counter(self.__class__.__name__, 'read_row')
-        self.row_set_overlap = self._overlap_row_set(self.beam_options['row_set'])
+        self.row_set = self._row_set(self.beam_options['row_set'])
 
     def _get_table(self):
         if self.table is None:
@@ -169,17 +174,42 @@ class _BigTableSource(iobase.BoundedSource):
                 .table(self.beam_options['table_id'])
         return self.table
 
-    def _overlap_row_set(self, row_set):
-        if row_set is not None:
-            over_set = _OverlapRowSet()
-            for sets in row_set.row_keys:
-                over_set.add_row_key(sets)
+    def _defragment(self, ranges):
+        """
+        [an auxiliary method] Sorts, if necessary, and defragments the list of row ranges
+        :param ranges: [list] A list of row ranges
+        :return: [void]
+        """
+        length = len(ranges)
+        if length < 2:
+            return
+        for i in range(1, length):
+            if ranges[i-1].start_key > ranges[i].start_key:
+                # If the list is not sorted, sort it first
+                ranges.sort(key=lambda tup: tup.start_key)
+                self._defragment(ranges)
+                return
+            elif ranges[i-1].end_key >= ranges[i].start_key:
+                ranges[i].start_key = ranges[i-1].start_key
+                del ranges[i-1]
+                self._defragment(ranges)
+                return
 
-            for sets in row_set.row_ranges:
-                over_set.add_row_range(sets)
-            return over_set
-        else:
+    def _row_set(self, row_set):
+        """
+        [an auxiliary method] Creates a local deep copy of of the input RowSet reference
+        :param row_set: [RowSet()] Reference to a RowSet() class
+        :return: New RowSet() with non-overlapping row ranges
+        """
+        if row_set is None:
             return None
+        new_set = RowSet()
+        for sets in row_set.row_keys:
+            new_set.add_row_key(sets)
+        for sets in row_set.row_ranges:
+            new_set.add_row_range(sets)
+        self._defragment(new_set.row_ranges)
+        return new_set
 
     def estimate_size(self):
         # size = [k.offset_bytes for k in self.get_sample_row_keys()][-1]
@@ -223,7 +253,7 @@ class _BigTableSource(iobase.BoundedSource):
 
         if start_position == b'' and stop_position == b'':
             if self.beam_options['row_set'] is not None:
-                for row_range in self.row_set_overlap.row_ranges:
+                for row_range in self.row_set.row_ranges:
                     for row_split in self.split_range_size(desired_bundle_size, self.get_sample_row_keys(), row_range):
                         yield row_split
             else:

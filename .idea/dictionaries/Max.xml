@@ -5,7 +5,9 @@
       <w>bigtable</w>
       <w>corrales</w>
       <w>defragment</w>
+      <w>grpc</w>
       <w>iobase</w>
+      <w>literalinclude</w>
       <w>mapreduces</w>
       <w>overlaped</w>
       <w>ptransform</w>

@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4f2f17ed-a6f4-4850-9f6c-c6a64d21525a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/example_bigtable_beam.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/example_bigtable_beam.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/Max.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/Max.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py" beforeDir="false" afterPath="$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/beam_bigtable_package/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/beam_bigtable_package/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,15 +16,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="381">
-              <caret line="124" column="58" selection-start-line="124" selection-start-column="58" selection-end-line="124" selection-end-column="58" />
+            <state relative-caret-position="1277">
+              <caret line="517" lean-forward="true" selection-start-line="517" selection-end-line="517" />
               <folding>
-                <element signature="n#!!doc" />
-                <element signature="e#785#1587#1" />
                 <element signature="e#1588#1626#0" expanded="true" />
-                <element signature="e#16377#16959#0" />
-                <element signature="e#17001#19957#0" />
-                <element signature="e#20004#21349#0" />
+                <element signature="e#3174#3205#0" />
+                <element signature="e#9844#11854#0" />
+                <element signature="e#11935#13093#0" />
+                <element signature="e#13194#13677#0" />
+                <element signature="e#13772#15383#0" />
               </folding>
             </state>
           </provider>
@@ -36,8 +33,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/apache_beam/io/range_trackers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="447">
-              <caret line="190" column="6" selection-start-line="190" selection-start-column="6" selection-end-line="190" selection-end-column="6" />
+            <state relative-caret-position="381">
+              <caret line="323" lean-forward="true" selection-start-line="323" selection-end-line="323" />
             </state>
           </provider>
         </entry>
@@ -45,8 +42,25 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/table.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1277">
-              <caret line="558" column="18" selection-start-line="558" selection-start-column="18" selection-end-line="558" selection-end-column="18" />
+            <state relative-caret-position="616">
+              <caret line="527" column="16" lean-forward="true" selection-start-line="527" selection-start-column="16" selection-end-line="527" selection-end-column="16" />
+              <folding>
+                <element signature="n#!!doc" />
+                <element signature="e#4655#5443#0" />
+                <element signature="e#7230#8730#0" />
+                <element signature="e#8762#9300#0" />
+                <element signature="e#9332#9659#0" />
+                <element signature="e#15675#17126#0" />
+                <element signature="e#17190#18943#0" />
+                <element signature="e#20935#22016#0" />
+                <element signature="e#22086#23338#0" />
+                <element signature="e#23435#24455#0" />
+                <element signature="e#24504#29333#0" />
+                <element signature="e#29368#32253#0" />
+                <element signature="e#35030#36213#0" />
+                <element signature="e#36264#36867#0" />
+                <element signature="e#36900#37398#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -93,8 +107,8 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="5750" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="1910" />
     <option name="y" value="-10" />
     <option name="width" value="3860" />
     <option name="height" value="2127" />
@@ -138,7 +152,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../beam" />
-    <property name="settings.editor.selected.configurable" value="Errors" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -192,12 +206,12 @@
       <option name="presentableId" value="Default" />
       <updated>1551192203758</updated>
       <workItem from="1554679529603" duration="924000" />
-      <workItem from="1554680461735" duration="19285000" />
+      <workItem from="1554680461735" duration="23187000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20209000" />
+    <option name="totallyTimeSpent" value="24111000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -209,7 +223,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="5750" y="-10" width="3860" height="2127" extended-state="6" />
+    <frame x="1910" y="-10" width="3860" height="2127" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49819493" visible="true" weight="0.13024987" />
@@ -323,20 +337,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/table.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1277">
-          <caret line="558" column="18" selection-start-line="558" selection-start-column="18" selection-end-line="558" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/apache_beam/io/range_trackers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="447">
-          <caret line="190" column="6" selection-start-line="190" selection-start-column="6" selection-end-line="190" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/__version__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="99">
@@ -351,24 +351,55 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/apache_beam/io/range_trackers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="323" lean-forward="true" selection-start-line="323" selection-end-line="323" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/google/cloud/bigtable/table.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="616">
+          <caret line="527" column="16" lean-forward="true" selection-start-line="527" selection-start-column="16" selection-end-line="527" selection-end-column="16" />
+          <folding>
+            <element signature="n#!!doc" />
+            <element signature="e#4655#5443#0" />
+            <element signature="e#7230#8730#0" />
+            <element signature="e#8762#9300#0" />
+            <element signature="e#9332#9659#0" />
+            <element signature="e#15675#17126#0" />
+            <element signature="e#17190#18943#0" />
+            <element signature="e#20935#22016#0" />
+            <element signature="e#22086#23338#0" />
+            <element signature="e#23435#24455#0" />
+            <element signature="e#24504#29333#0" />
+            <element signature="e#29368#32253#0" />
+            <element signature="e#35030#36213#0" />
+            <element signature="e#36264#36867#0" />
+            <element signature="e#36900#37398#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$USER_HOME$/.PyCharm2018.3/system/python_stubs/643279865/__builtin__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="462">
-          <caret line="3402" column="8" selection-start-line="3402" selection-start-column="8" selection-end-line="3402" selection-end-column="8" />
+        <state relative-caret-position="-33">
+          <caret line="3533" column="6" selection-start-line="3533" selection-start-column="6" selection-end-line="3533" selection-end-column="6" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/beam_bigtable_package/beam_bigtable/bigtable.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="381">
-          <caret line="124" column="58" selection-start-line="124" selection-start-column="58" selection-end-line="124" selection-end-column="58" />
+        <state relative-caret-position="1277">
+          <caret line="517" lean-forward="true" selection-start-line="517" selection-end-line="517" />
           <folding>
-            <element signature="n#!!doc" />
-            <element signature="e#785#1587#1" />
             <element signature="e#1588#1626#0" expanded="true" />
-            <element signature="e#16377#16959#0" />
-            <element signature="e#17001#19957#0" />
-            <element signature="e#20004#21349#0" />
+            <element signature="e#3174#3205#0" />
+            <element signature="e#9844#11854#0" />
+            <element signature="e#11935#13093#0" />
+            <element signature="e#13194#13677#0" />
+            <element signature="e#13772#15383#0" />
           </folding>
         </state>
       </provider>
