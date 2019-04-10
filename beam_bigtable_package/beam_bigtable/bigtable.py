@@ -42,7 +42,8 @@ import math
 
 import apache_beam as beam
 # from apache_beam import pvalue
-from apache_beam.io import iobase
+from apache_beam.io.iobase import BoundedSource
+from apache_beam.io.iobase import SourceBundle
 from apache_beam.io.range_trackers import LexicographicKeyRangeTracker
 from apache_beam.metrics import Metrics
 from apache_beam.transforms.display import DisplayDataItem
@@ -136,7 +137,7 @@ __all__ = ['WriteToBigTable', 'ReadFromBigTable', 'BigTableSource']
 #         self.add_row_range(RowRange(start_key, end_key, start_inclusive, end_inclusive))
 
 
-class _BigTableSource(iobase.BoundedSource):
+class _BigTableSource(BoundedSource):
     def __init__(self, project_id, instance_id, table_id, row_set=None, filter_=None):
         """ Constructor of the Read connector of Bigtable
         Args:
@@ -214,7 +215,7 @@ class _BigTableSource(iobase.BoundedSource):
         for key in keys:
             found = False
             for row_range in new_set.row_ranges:
-                if row_range.start_key <= key <= row_range.end.key: # Check whether the key is contained in the ranges
+                if row_range.start_key <= key <= row_range.end.key:  # Check whether the key is contained in the ranges
                     found = True
             if not found:
                 new_set.add_row_key(key)
@@ -245,6 +246,39 @@ class _BigTableSource(iobase.BoundedSource):
         else:
             return LexicographicKeyRangeTracker(start_position, stop_position)
 
+    def _split(self, desired_bundle_size, start_position=b'', stop_position=b''):
+        """ Splits the source into a set of bundles.
+
+        Bundles should be approximately of size ``desired_bundle_size`` bytes.
+
+        :param desired_bundle_size: [int] the desired size (in bytes) of the bundles returned.
+        :param start_position: if specified, must be used as the starting position of the first bundle.
+        :param stop_position: if specified, must be used as the ending position of the last bundle.
+        :return: an iterator of objects of type 'SourceBundle' that gives information about the generated bundles.
+        """
+        if self.beam_options['row_set'] is None:
+            for bundle in self._split_bulk(desired_bundle_size, start_position, stop_position):
+                yield bundle
+        else:
+            for bundle in self._split_itemized(desired_bundle_size, start_position, stop_position):
+                yield bundle
+
+    def _split_bulk(self, desired_bundle_size, start_position, stop_position):
+        if start_position == b'' and stop_position == b'':  # special case 1
+            table_size = self.estimate_size()
+            if table_size <= desired_bundle_size:  # special case 1.1
+                yield SourceBundle(long(table_size), self, 0, table_size)
+            else:
+                bundle_count = table_size // desired_bundle_size + 1
+                bundle_size = table_size // bundle_count + 1
+                for i in range(bundle_count):
+                    pos_start = i * bundle_size
+                    pos_stop = min(table_size, pos_start + bundle_size)
+                    yield SourceBundle(long(pos_stop - pos_start), self, pos_start, pos_stop)
+
+    def _split_itemized(self, desired_bundle_size, start_position, stop_position):
+        pass
+
     def split(self, desired_bundle_size, start_position=b'', stop_position=b''):
         """ Splits the source into a set of bundles, using the row_set if it is set.
         Bundles should be approximately of ``desired_bundle_size`` bytes, if this
@@ -274,7 +308,8 @@ class _BigTableSource(iobase.BoundedSource):
                 for sample_row_key in self.get_sample_row_keys():
                     addition_size += sample_row_key.offset_bytes - last_offset
                     if addition_size >= desired_bundle_size:
-                        for fraction in self.range_split_fraction(addition_size, desired_bundle_size, start_key, sample_row_key.row_key):
+                        # for fraction in self.range_split_fraction(addition_size, desired_bundle_size, start_key, sample_row_key.row_key):
+                        for fraction in self.split_range_subranges(addition_size, desired_bundle_size, self.get_range_tracker(start_key, sample_row_key.row_key)):
                             yield fraction
                         start_key = sample_row_key.row_key
                         addition_size = 0
@@ -284,74 +319,63 @@ class _BigTableSource(iobase.BoundedSource):
                 yield row_split
 
     def split_range_size(self, desired_size, sample_row_keys, range_):
-        """ This method split the row_set ranges using the desired_bundle_size
-        you get.
+        """ This method split the row_set ranges using the desired_bundle_size you get.
+
         :param desired_size: [int]  The size you need to split the ranges.
         :param sample_row_keys: [list] A list of row keys with a end size.
-        :param range_: A Row Range Element, to split if it is necessary.
+        :param range_: A RowRange Element, to split if necessary.
         """
-
         start = None
-        # end = None
         last_offset = 0
         for sample_row in sample_row_keys:
-            current = sample_row.offset_bytes - last_offset
-
-            # If the sample_row is the first or last element in the sample_row keys parameter,
-            # it avoids this sample row element.
-            if sample_row.row_key == b'':
-                continue
-
-            if range_.start_key <= sample_row.row_key <= range_.end_key:
+            # Skip first and last sample_row in the sample_row_keys parameter
+            if sample_row.row_key != b'' and range_.start_key <= sample_row.row_key <= range_.end_key:
                 if start is not None:
-                    end = sample_row.row_key
-                    ranges = LexicographicKeyRangeTracker(start, end)
-                    for fraction in self.split_range_subranges(current, desired_size, ranges):
+                    for fraction in self.split_range_subranges(sample_row.offset_bytes - last_offset,
+                                                               desired_size,
+                                                               LexicographicKeyRangeTracker(start, sample_row.row_key)):
                         yield fraction
                 start = sample_row.row_key
             last_offset = sample_row.offset_bytes
 
-    def range_split_fraction(self, current_size, desired_bundle_size, start_key, end_key):
-        """ This method is used to send a range[start_key, end_key) to the
-        ``split_range_subranges`` method.
-        :param current_size: the size of the range.
-        :param desired_bundle_size: the size you want to split.
-        :param start_key: [byte] The start key row in the range.
-        :param end_key: [byte] The end key row in the range.
-        """
-        return self.split_range_subranges(current_size, desired_bundle_size, self.get_range_tracker(start_key, end_key))
+    # def range_split_fraction(self, current_size, desired_bundle_size, start_key, end_key):
+    #     """ This method is used to send a range[start_key, end_key) to the ``split_range_subranges`` method.
+    #
+    #     :param current_size: the size of the range.
+    #     :param desired_bundle_size: the size you want to split.
+    #     :param start_key: [byte] The start key row in the range.
+    #     :param end_key: [byte] The end key row in the range.
+    #     """
+    #     return self.split_range_subranges(current_size, desired_bundle_size, self.get_range_tracker(start_key, end_key))
 
-    def split_range_subranges(self, sample_size_bytes, desired_bundle_size, ranges):
-        """ This method split the range you get using the
-        ``desired_bundle_size`` as a limit size, It compares the
-        size of the range and the ``desired_bundle size`` if it is necessary
+    def split_range_subranges(self, sample_size_bytes, desired_bundle_size, range_tracker):
+        """ This method split the range you get using the 'desired_bundle_size' as a limit size,
+
+        It compares the size of the range and the ``desired_bundle size`` if it is necessary
         to split a range, it uses the ``fraction_to_position`` method.
         :param sample_size_bytes: The size of the Range.
         :param desired_bundle_size: The desired size to split the Range.
         :param ranges: the Range to split.
         """
-        start_position = ranges.start_position()
-        end_position = ranges.stop_position()
+        start_position = range_tracker.start_position()
+        end_position = range_tracker.stop_position()
         start_key = start_position
         end_key = end_position
-        split_ = math.floor(float(desired_bundle_size) / float(sample_size_bytes) * 100) / 100
+        split_ = math.floor(float(desired_bundle_size) / float(sample_size_bytes) * 100) / 100  # Why 2 decimal points?
 
         if split_ == 1 or (start_position == b'' or end_position == b''):
-            yield iobase.SourceBundle(sample_size_bytes, self, start_position, end_position)
+            yield SourceBundle(sample_size_bytes, self, start_position, end_position)
         else:
-            size_portion = int(sample_size_bytes * split_)
-
-            sum_portion = size_portion
-            while sum_portion < sample_size_bytes:
-                fraction_portion = float(sum_portion)/float(sample_size_bytes)
+            bundle_size = int(sample_size_bytes * split_)
+            offset = bundle_size
+            while offset < sample_size_bytes:
+                fraction_portion = float(offset)/float(sample_size_bytes)
                 position = self.fraction_to_position(fraction_portion, start_position, end_position)
                 end_key = position
-                yield iobase.SourceBundle(long(size_portion), self, start_key, end_key)
+                yield SourceBundle(long(bundle_size), self, start_key, end_key)
                 start_key = position
-                sum_portion+= size_portion
-            last_portion = (sum_portion-size_portion)
-            last_size = sample_size_bytes-last_portion
-            yield iobase.SourceBundle(long(last_size), self, end_key, end_position)
+                offset += bundle_size
+            yield SourceBundle(long(sample_size_bytes - offset + bundle_size), self, end_key, end_position)
 
     def read(self, range_tracker):
         filter_ = self.beam_options['filter_']
