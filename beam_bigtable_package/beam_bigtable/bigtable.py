@@ -357,46 +357,38 @@ class _BigTableSource(BoundedSource):
         :param desired_bundle_size: The desired size to split the Range.
         :param ranges: the Range to split.
         """
-        start_position = range_tracker.start_position()
-        end_position = range_tracker.stop_position()
-        start_key = start_position
-        end_key = end_position
         split_ = math.floor(float(desired_bundle_size) / float(sample_size_bytes) * 100) / 100  # Why 2 decimal points?
-
-        if split_ == 1 or (start_position == b'' or end_position == b''):
-            yield SourceBundle(sample_size_bytes, self, start_position, end_position)
+        pos_start = range_tracker.start_position()
+        pos_stop = range_tracker.stop_position()
+        if split_ == 1 or pos_start == b'' or pos_stop == b'':
+            yield SourceBundle(sample_size_bytes, self, pos_start, pos_stop)
         else:
             bundle_size = int(sample_size_bytes * split_)
             offset = bundle_size
+            start_key = pos_start
+            end_key = pos_stop
             while offset < sample_size_bytes:
-                fraction_portion = float(offset)/float(sample_size_bytes)
-                position = self.fraction_to_position(fraction_portion, start_position, end_position)
-                end_key = position
+                end_key = self.fraction_to_position(float(offset)/float(sample_size_bytes), pos_start, pos_stop)
                 yield SourceBundle(long(bundle_size), self, start_key, end_key)
-                start_key = position
+                start_key = end_key
                 offset += bundle_size
-            yield SourceBundle(long(sample_size_bytes - offset + bundle_size), self, end_key, end_position)
+            yield SourceBundle(long(sample_size_bytes - offset + bundle_size), self, end_key, pos_stop)
 
     def read(self, range_tracker):
-        filter_ = self.beam_options['filter_']
-        table = self._get_table()
-        read_rows = table.read_rows(start_key=range_tracker.start_position(),
-                                    end_key=range_tracker.stop_position(),
-                                    filter_=filter_)
-
+        read_rows = self._get_table().read_rows(start_key=range_tracker.start_position(),
+                                                end_key=range_tracker.stop_position(),
+                                                filter_=self.beam_options['filter_'])
         for row in read_rows:
-            claimed = range_tracker.try_claim(row.row_key)
-            if claimed:
+            if range_tracker.try_claim(row.row_key):
                 self.read_row.inc()
                 yield row
             else:
                 break
-                # Read row need to be cancel
 
     def fraction_to_position(self, position, range_start, range_stop):
-        """ We use the ``fraction_to_position`` method in
-        ``LexicographicKeyRangeTracker`` class to split a
+        """ We use the ``fraction_to_position`` method in ``LexicographicKeyRangeTracker`` class to split a
         range into two chunks.
+
         :param position:
         :param range_start:
         :param range_stop:
@@ -422,6 +414,7 @@ class _BigTableSource(BoundedSource):
 class BigTableSource(_BigTableSource):
     def __init__(self, project_id, instance_id, table_id, row_set=None, filter_=None):
         """ Constructor of the Read connector of Bigtable
+
         Args:
           project_id(str): GCP Project of to write the Rows
           instance_id(str): GCP Instance to write the Rows
