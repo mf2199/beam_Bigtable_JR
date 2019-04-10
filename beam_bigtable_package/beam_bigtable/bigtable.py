@@ -80,60 +80,6 @@ except ImportError:
 __all__ = ['WriteToBigTable', 'ReadFromBigTable', 'BigTableSource']
 
 
-# class _OverlapRowSet(RowSet):
-#     def __init__(self):
-#         super(self.__class__, self).__init__()
-#         self.row_keys = []
-#         self.row_ranges = []
-#
-#     def _defragment(self):
-#         length = len(self.row_ranges)
-#         if length < 2:
-#             return
-#         for i in range(1, length):
-#             if self.row_ranges[i-1].start_key > self.row_ranges[i].start_key:
-#                 # If the list is not sorted, sort it first
-#                 self.row_ranges.sort(key=lambda tup: tup.start_key)
-#                 self._defragment()
-#                 return
-#             elif self.row_ranges[i-1].end_key >= self.row_ranges[i].start_key:
-#                 self.row_ranges[i].start_key = self.row_ranges[i-1].start_key
-#                 del self.row_ranges[i-1]
-#                 self._defragment()
-#                 return
-#
-#     def add_row_range(self, row_range):
-#         # overlaped = True
-#         #
-#         # def overlap(start1, end1, start2, end2):
-#         #     overlaps = start1 <= end2 and end1 >= start2
-#         #     if not overlaps:
-#         #         return False, None, None
-#         #     return True, min(start1, start2), max(end1, end2)
-#         # for (i, ranges) in enumerate(self.row_ranges):
-#         #     over = overlap(row_range.start_key, row_range.end_key, ranges.start_key, ranges.end_key)
-#         #     if over[0]:
-#         #         self.row_ranges[i] = RowRange(over[1], over[2])
-#         #         overlaped = False
-#         #         break
-#         # if overlaped:
-#         #     self.row_ranges.append(row_range)
-#
-#         # for i, rng in enumerate(self.row_ranges):
-#         #     if row_range.start_key <= rng.end_key and row_range.end_key >= rng.start_key:
-#         #         self.row_ranges[i] = RowRange(min(row_range.start_key, rng.start_key),
-#         #                                       max(row_range.end_key, rng.end_key))
-#         #         return
-#         self.row_ranges.append(row_range)
-#         # self.row_ranges.sort(key=lambda tup: tup.start_key)
-#         self._defragment()
-#
-#     def add_row_range_from_keys(self, start_key=None, end_key=None, start_inclusive=True, end_inclusive=False):
-#         # row_range = RowRange(start_key, end_key, start_inclusive, end_inclusive)
-#         # self.add_row_range(row_range)
-#         self.add_row_range(RowRange(start_key, end_key, start_inclusive, end_inclusive))
-
-
 class _BigTableSource(BoundedSource):
 	def __init__(self, project_id, instance_id, table_id, row_set=None, filter_=None):
 		""" Constructor of the Read connector of Bigtable
@@ -383,8 +329,7 @@ class _BigTableSource(BoundedSource):
 				break
 
 	def fraction_to_position(self, position, range_start, range_stop):
-		""" We use the ``fraction_to_position`` method in ``LexicographicKeyRangeTracker`` class to split a
-		range into two chunks.
+		""" Using ``fraction_to_position`` method in ``LexicographicKeyRangeTracker`` to split a range into two chunks.
 
 		:param position:
 		:param range_start:
@@ -441,8 +386,8 @@ class ReadFromBigTable(beam.PTransform):
 
 
 class _BigTableWriteFn(beam.DoFn):
-	""" Creates the connector can call and add_row to the batcher using each
-	row in beam pipe line
+	""" Creates the connector can call and add_row to the batcher using each row in beam pipe line
+
 	Args:
 		project_id(str): GCP Project ID
 		instance_id(str): GCP Instance ID
@@ -451,6 +396,7 @@ class _BigTableWriteFn(beam.DoFn):
 
 	def __init__(self, project_id, instance_id, table_id, flush_count=FLUSH_COUNT, max_row_bytes=MAX_ROW_BYTES):
 		""" Constructor of the Write connector of Bigtable
+
 		Args:
 		  project_id(str): GCP Project of to write the Rows
 		  instance_id(str): GCP Instance to write the Rows
@@ -516,9 +462,9 @@ class WriteToBigTable(beam.PTransform):
 	""" A transform to write to the Bigtable Table.
 	A PTransform that write a list of `DirectRow` into the Bigtable Table
 	"""
-	def __init__(self, project_id=None, instance_id=None, table_id=None,
-				 flush_count=FLUSH_COUNT, max_row_bytes=MAX_ROW_BYTES):
+	def __init__(self, project_id, instance_id, table_id, flush_count=FLUSH_COUNT, max_row_bytes=MAX_ROW_BYTES):
 		""" The PTransform to access the Bigtable Write connector
+
 		Args:
 		  project_id(str): GCP Project of to write the Rows
 		  instance_id(str): GCP Instance to write the Rows
