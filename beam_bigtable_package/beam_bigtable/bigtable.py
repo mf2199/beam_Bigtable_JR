@@ -251,7 +251,6 @@ class _BigTableSource(BoundedSource):
 				for sample_row_key in self.get_sample_row_keys():
 					addition_size += sample_row_key.offset_bytes - last_offset
 					if addition_size >= desired_bundle_size:
-						# for fraction in self.range_split_fraction(addition_size, desired_bundle_size, start_key, sample_row_key.row_key):
 						for fraction in self.split_range_subranges(addition_size, desired_bundle_size, self.get_range_tracker(start_key, sample_row_key.row_key)):
 							yield fraction
 						start_key = sample_row_key.row_key
@@ -281,16 +280,6 @@ class _BigTableSource(BoundedSource):
 				start = sample_row.row_key
 			last_offset = sample_row.offset_bytes
 
-	# def range_split_fraction(self, current_size, desired_bundle_size, start_key, end_key):
-	#     """ This method is used to send a range[start_key, end_key) to the ``split_range_subranges`` method.
-	#
-	#     :param current_size: the size of the range.
-	#     :param desired_bundle_size: the size you want to split.
-	#     :param start_key: [byte] The start key row in the range.
-	#     :param end_key: [byte] The end key row in the range.
-	#     """
-	#     return self.split_range_subranges(current_size, desired_bundle_size, self.get_range_tracker(start_key, end_key))
-
 	def split_range_subranges(self, sample_size_bytes, desired_bundle_size, range_tracker):
 		""" This method split the range you get using the 'desired_bundle_size' as a limit size,
 
@@ -298,7 +287,7 @@ class _BigTableSource(BoundedSource):
 		to split a range, it uses the ``fraction_to_position`` method.
 		:param sample_size_bytes: The size of the Range.
 		:param desired_bundle_size: The desired size to split the Range.
-		:param ranges: the Range to split.
+		:param range_tracker: the RangeTracker range to split.
 		"""
 		split_ = math.floor(float(desired_bundle_size) / float(sample_size_bytes) * 100) / 100  # Why 2 decimal points?
 		pos_start = range_tracker.start_position()
