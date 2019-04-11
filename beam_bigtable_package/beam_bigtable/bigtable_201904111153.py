@@ -190,131 +190,130 @@ class _BigTableSource(BoundedSource):
 
 		return new_set
 
-	# def _estimate_offset(self, key):
-	# 	""" Gives an approximate offset of a row key based on its relative position between two nearest sample row keys
-	#
-	# 	*** The true result is likely to be different!
-	# 	*** Also, one has to be careful here, as [b''] may also indicate the end of the table!
-	#
-	# 	:param key: [string] the row key
-	# 	:return: 	[int] An approximate offset, in bytes
-	# 	"""
-	# 	if key == b'':  # Careful here: [b''] can also indicate the end of the table!
-	# 		return 0
-	# 	keys = list(self.get_sample_row_keys())
-	# 	for i in range(1, len(keys)):
-	# 		fraction = LexicographicKeyRangeTracker.position_to_fraction(key, keys[i-1],keys[i])
-	# 		if 0.0 <= fraction <= 1.0:
-	# 			return keys[i-1].offset_bytes + int(fraction * (keys[i].offset_bytes - keys[i-1].offset_bytes))
-	# 	return None
-	#
-	# def _estimate_key(self, offset):
-	# 	""" Estimates the row key corresponding to the given offset; returns None if the input is out of range
-	#
-	# 	*** The true result is likely to be different!
-	# 	*** If the offset falls into the table segment defined by the last two sample row keys,
-	# 	then the function returns the last sample row key, [b'']
-	#
-	# 	:param offset:	[int] Key offset, in bytes
-	# 	:return: 		[string] An approximate corresponding row key
-	# 	"""
-	# 	keys = list(self.get_sample_row_keys())
-	# 	for i in range(1, len(keys)):
-	# 		if keys[i-1].offset_bytes <= offset <= keys[i].offset_bytes:
-	# 			if keys[i] == b'':
-	# 				return b''
-	# 			fraction = float(offset - keys[i-1].offset_bytes) / (keys[i].offset_bytes - keys[i-1].offset_bytes)
-	# 			return LexicographicKeyRangeTracker.fraction_to_position(fraction, keys[i-1], keys[i])
-	# 	return None
-	#
-	# def _estimate_range_size(self, row_range):
-	# 	""" Estimates the size of a range based on its relative position among the sample row keys
-	#
-	# 	*** The true result is likely to be different! ***
-	#
-	# 	:param key_start:	[string] Range's start key
-	# 	:param key_end:		[string] Range's end key
-	# 	:return:			[int] An estimated range size
-	# 	"""
-	# 	offset_start = self._estimate_offset(row_range.start_key)
-	# 	if row_range.end_key == b'':
-	# 		offset_end = self.estimate_size()
-	# 	else:
-	# 		offset_end = self._estimate_offset(row_range.end_key)
-	# 	if offset_start is None or offset_end is None:
-	# 		return None
-	# 	return offset_end - offset_start
-	#
-	# def _split(self, desired_bundle_size, start_position=b'', stop_position=b''):
-	# 	""" Splits the source into a set of bundles.
-	#
-	# 	Bundles should be approximately of size ``desired_bundle_size`` bytes.
-	#
-	# 	:param desired_bundle_size: [int] the desired size (in bytes) of the bundles returned.
-	# 	:param start_position: if specified, must be used as the starting position of the first bundle.
-	# 	:param stop_position: if specified, must be used as the ending position of the last bundle.
-	# 	:return: an iterator of objects of type 'SourceBundle' that gives information about the generated bundles.
-	# 	"""
-	# 	if self.beam_options['row_set'] is None:
-	# 		for bundle in self._split_bulk(desired_bundle_size, start_position, stop_position):
-	# 			yield bundle
-	# 	else:
-	# 		for bundle in self._split_itemized(desired_bundle_size, start_position, stop_position):
-	# 			yield bundle
-	#
-	# def _split_bulk(self, desired_bundle_size, start_position, stop_position):
-	# 	""" Bulk-split a row range, which could be the entire table
-	#
-	# 	*** [The SourceBundle 'start_position' and 'stop_position' fields are assumed to be the 'row_key' types] ***
-	#
-	# 	:param desired_bundle_size:
-	# 	:param start_position:	[string] Start row key
-	# 	:param stop_position:	[string] End row key
-	# 	:return:
-	# 	"""
-	# 	if stop_position < start_position:
-	# 		yield None
-	# 		raise StopIteration  # The necessity of this is to be verified
-	#
-	# 	bulk_size = self._estimate_range_size(RowRange(start_position, stop_position))
-	# 	if bulk_size <= desired_bundle_size:
-	# 		yield SourceBundle(long(bulk_size), self, start_position, stop_position)
-	# 	else:
-	# 		if stop_position == b'':
-	# 			last_named_sample_row_key = list(self.get_sample_row_keys())[-2]  # second-to-last sample row key
-	# 			weight = long(self.estimate_size() - last_named_sample_row_key.offset_bytes)
-	# 			if start_position >= last_named_sample_row_key:
-	# 				yield SourceBundle(weight, self, start_position, stop_position)
-	# 			else:
-	# 				yield SourceBundle(weight, self, last_named_sample_row_key, stop_position)
-	# 				yield self._split_bulk(desired_bundle_size, start_position, last_named_sample_row_key)
-	# 		else:
-	# 			bundle_count = bulk_size // desired_bundle_size + 1
-	# 			split_point = self.fraction_to_position(1.0 / bundle_count, start_position, stop_position)
-	# 			yield SourceBundle(desired_bundle_size, start_position, split_point)
-	# 			yield self._split_bulk(desired_bundle_size, split_point, stop_position)
-	#
-	# 	### OLD CODE --- TO BE DELETED ###
-	# 	# if start_position == stop_position == b'':  # special case: process entire table
-	# 	# 	table_size = self.estimate_size()
-	# 	# 	if table_size <= desired_bundle_size:  # special case: entire table can be processed at once
-	# 	# 		# yield SourceBundle(long(table_size), self, 0, table_size)
-	# 	# 		yield SourceBundle(long(table_size), self, b'', b'')
-	# 	# 	else:  # more general case: entire table cannot be processed at once and needs to be split
-	# 	# 		bundle_count = table_size // desired_bundle_size + 1
-	# 	# 		bundle_size = table_size // bundle_count + 1
-	# 	# 		for i in range(bundle_count):
-	# 	# 			pos_start = i * bundle_size
-	# 	# 			pos_stop = min(table_size, pos_start + bundle_size)
-	# 	# 			# yield SourceBundle(long(pos_stop - pos_start), self, pos_start, pos_stop)
-	# 	# 			yield SourceBundle(long(pos_stop - pos_start),
-	# 	# 							   self,
-	# 	# 							   self._estimate_key(pos_start),
-	# 	# 							   self._estimate_key(pos_stop))
-	#
-	# def _split_itemized(self, desired_bundle_size, start_position, stop_position):
-	# 	# [TBD]
-	# 	yield None
+	def _estimate_offset(self, key):
+		""" Gives an approximate offset of a row key based on its relative position between two nearest sample row keys
+
+		*** The true result is likely to be different!
+		*** Also, one has to be careful here, as [b''] may also indicate the end of the table!
+
+		:param key: [string] the row key
+		:return: 	[int] An approximate offset, in bytes
+		"""
+		if key == b'':  # Careful here: [b''] can also indicate the end of the table!
+			return 0
+		keys = list(self.get_sample_row_keys())
+		for i in range(1, len(keys)):
+			fraction = LexicographicKeyRangeTracker.position_to_fraction(key, keys[i-1],keys[i])
+			if 0.0 <= fraction <= 1.0:
+				return keys[i-1].offset_bytes + int(fraction * (keys[i].offset_bytes - keys[i-1].offset_bytes))
+		return None
+
+	def _estimate_key(self, offset):
+		""" Estimates the row key corresponding to the given offset; returns None if the input is out of range
+
+		*** The true result is likely to be different!
+		*** If the offset falls into the table segment defined by the last two sample row keys,
+		then the function returns the last sample row key, [b'']
+
+		:param offset:	[int] Key offset, in bytes
+		:return: 		[string] An approximate corresponding row key
+		"""
+		keys = list(self.get_sample_row_keys())
+		for i in range(1, len(keys)):
+			if keys[i-1].offset_bytes <= offset <= keys[i].offset_bytes:
+				if keys[i] == b'':
+					return b''
+				fraction = float(offset - keys[i-1].offset_bytes) / (keys[i].offset_bytes - keys[i-1].offset_bytes)
+				return LexicographicKeyRangeTracker.fraction_to_position(fraction, keys[i-1], keys[i])
+		return None
+
+	def _estimate_range_size(self, row_range):
+		""" Estimates the size of a range based on its relative position among the sample row keys
+
+		*** The true result is likely to be different! ***
+
+		:param key_start:	[string] Range's start key
+		:param key_end:		[string] Range's end key
+		:return:			[int] An estimated range size
+		"""
+		offset_start = self._estimate_offset(row_range.start_key)
+		if row_range.end_key == b'':
+			offset_end = self.estimate_size()
+		else:
+			offset_end = self._estimate_offset(row_range.end_key)
+		if offset_start is None or offset_end is None:
+			return None
+		return offset_end - offset_start
+
+	def _split(self, desired_bundle_size, start_position=b'', stop_position=b''):
+		""" Splits the source into a set of bundles.
+
+		Bundles should be approximately of size ``desired_bundle_size`` bytes.
+
+		:param desired_bundle_size: [int] the desired size (in bytes) of the bundles returned.
+		:param start_position: if specified, must be used as the starting position of the first bundle.
+		:param stop_position: if specified, must be used as the ending position of the last bundle.
+		:return: an iterator of objects of type 'SourceBundle' that gives information about the generated bundles.
+		"""
+		if self.beam_options['row_set'] is None:
+			for bundle in self._split_bulk(desired_bundle_size, start_position, stop_position):
+				yield bundle
+		else:
+			for bundle in self._split_itemized(desired_bundle_size, start_position, stop_position):
+				yield bundle
+
+	def _split_bulk(self, desired_bundle_size, start_position, stop_position):
+		""" Bulk-split a row range, which could be the entire table
+
+		*** [The SourceBundle 'start_position' and 'stop_position' fields are assumed to be the 'row_key' types] ***
+
+		:param desired_bundle_size:
+		:param start_position:	[string] Start row key
+		:param stop_position:	[string] End row key
+		:return:
+		"""
+		if stop_position < start_position:
+			yield None
+			raise StopIteration  # The necessity of this is to be verified
+
+		bulk_size = self._estimate_range_size(RowRange(start_position, stop_position))
+		if bulk_size <= desired_bundle_size:
+			yield SourceBundle(long(bulk_size), self, start_position, stop_position)
+		else:
+			if stop_position == b'':
+				last_named_sample_row_key = list(self.get_sample_row_keys())[-2]  # second-to-last sample row key
+				weight = long(self.estimate_size() - last_named_sample_row_key.offset_bytes)
+				if start_position >= last_named_sample_row_key:
+					yield SourceBundle(weight, self, start_position, stop_position)
+				else:
+					yield SourceBundle(weight, self, last_named_sample_row_key, stop_position)
+					yield self._split_bulk(desired_bundle_size, start_position, last_named_sample_row_key)
+			else:
+				bundle_count = bulk_size // desired_bundle_size + 1
+				split_point = self.fraction_to_position(1.0 / bundle_count, start_position, stop_position)
+				yield SourceBundle(desired_bundle_size, start_position, split_point)
+				yield self._split_bulk(desired_bundle_size, split_point, stop_position)
+
+		### OLD CODE --- TO BE DELETED ###
+		# if start_position == stop_position == b'':  # special case: process entire table
+		# 	table_size = self.estimate_size()
+		# 	if table_size <= desired_bundle_size:  # special case: entire table can be processed at once
+		# 		# yield SourceBundle(long(table_size), self, 0, table_size)
+		# 		yield SourceBundle(long(table_size), self, b'', b'')
+		# 	else:  # more general case: entire table cannot be processed at once and needs to be split
+		# 		bundle_count = table_size // desired_bundle_size + 1
+		# 		bundle_size = table_size // bundle_count + 1
+		# 		for i in range(bundle_count):
+		# 			pos_start = i * bundle_size
+		# 			pos_stop = min(table_size, pos_start + bundle_size)
+		# 			# yield SourceBundle(long(pos_stop - pos_start), self, pos_start, pos_stop)
+		# 			yield SourceBundle(long(pos_stop - pos_start),
+		# 							   self,
+		# 							   self._estimate_key(pos_start),
+		# 							   self._estimate_key(pos_stop))
+
+	def _split_itemized(self, desired_bundle_size, start_position, stop_position):
+		yield None
 
 	def split(self, desired_bundle_size, start_position=b'', stop_position=b''):
 		""" Splits the source into a set of bundles, using the row_set if it is set.
