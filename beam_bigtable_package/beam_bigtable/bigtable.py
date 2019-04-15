@@ -122,7 +122,7 @@ class BigtableSource(BoundedSource):
   def estimate_size(self):
     return list(self.get_sample_row_keys())[-1].offset_bytes
 
-  def split(self, desired_bundle_size, start_position=None, stop_position=None):
+  def split(self, desired_bundle_size=None, start_position=None, stop_position=None):
     """ Splits the source into a set of bundles, using the row_set if it is set.
 
     *** At this point, only splitting an entire table into samples based on the sample row keys is supported ***
@@ -154,7 +154,7 @@ class BigtableSource(BoundedSource):
   def read(self, range_tracker):
     read_rows = self._get_table().read_rows(start_key=range_tracker.start_position(),
                                             end_key=range_tracker.stop_position(),
-                                            filter_=self.beam_options['filter'])
+                                            filter_=self.beam_options['filter_'])
     for row in read_rows:
       if range_tracker.try_claim(row.row_key):
         self.read_row.inc()
