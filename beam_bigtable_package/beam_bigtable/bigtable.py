@@ -113,7 +113,7 @@ class BigtableSource(BoundedSource):
       self.sample_row_keys = list(self._get_table().sample_row_keys())
     return self.sample_row_keys
 
-  def get_range_tracker(self, start_position, stop_position):
+  def get_range_tracker(self, start_position=b'', stop_position=b''):
     if stop_position == b'':
       return LexicographicKeyRangeTracker(start_position)
     else:
@@ -142,6 +142,8 @@ class BigtableSource(BoundedSource):
 
     sample_row_keys = list(self.get_sample_row_keys())
     bundles = []
+    if len(sample_row_keys) > 0 and sample_row_keys[0] != b'':
+        bundles.append(SourceBundle(sample_row_keys[0].offset_bytes, self, b'', sample_row_keys[0].row_key))
     for i in range(1, len(sample_row_keys)):
       pos_start = sample_row_keys[i - 1].offset_bytes
       pos_stop = sample_row_keys[i].offset_bytes
@@ -154,10 +156,9 @@ class BigtableSource(BoundedSource):
     return bundles
 
   def read(self, range_tracker):
-    read_rows = self._get_table().read_rows(start_key=range_tracker.start_position(),
-                                            end_key=range_tracker.stop_position(),
-                                            filter_=self.beam_options['filter_'])
-    for row in read_rows:
+    for row in self._get_table().read_rows(start_key=range_tracker.start_position(),
+                                           end_key=range_tracker.stop_position(),
+                                           filter_=self.beam_options['filter_']):
       if range_tracker.try_claim(row.row_key):
         self.read_row.inc()
         yield row
