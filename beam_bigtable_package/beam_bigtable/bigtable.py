@@ -145,7 +145,9 @@ class BigtableSource(BoundedSource):
     for i in range(1, len(sample_row_keys)):
       pos_start = sample_row_keys[i - 1].offset_bytes
       pos_stop = sample_row_keys[i].offset_bytes
-      bundles.append(SourceBundle(pos_stop - pos_start, self, pos_start, pos_stop))
+      bundles.append(SourceBundle(pos_stop - pos_start, self,
+                                  sample_row_keys[i - 1].row_key,
+                                  sample_row_keys[i].row_key))
 
     # Shuffle is needed to allow reading from different locations of the table for better efficiency
     shuffle(bundles)
