@@ -2,44 +2,70 @@
 
 ## Description
 
-This code demonstrates how to connect create and upload a extra package to Dataflow and run a code in Dataflow without problems.
+This code demonstrates how to connect create, upload, and run an extra package at Google Dataflow environment.
 
 ## Build and Run
-1.  Create the structure. 
+1.  In order to create a new installation, the following file structure may be used:
     ```    
-    ├── beam_bigtable           # Package folder
-        ├─── __init__.py        # Package Initialization file.
+    ├── my_package              # Your package folder
+        ├─── __init__.py        # Package initialization file.
         ├─── __version__.py     # Version file.
-        └─── bigtable.py        # Your Package Code.
-    ├── setup.py                # Setup Code
-    ├── LICENSE
-    └── README.md
+        └─── my_source.py       # Your package source code
+    ├── setup.py                # Package installation instructions
+    ├── LICENSE                 # License terms
+    └── README.md               # This file
     ```
-3.  Create the Setup.py using the name of the package create a folder with that name and  then create in that folder a file __init__.py, and import your package file in it.
-3.  Run the command to create the file to install the new package.
+1.  Create the installation file, 'setup.py', with the package name in the NAME field.
+2.  Create (or copy) the file describing the license terms.
+3.  [recommended] Add a copy of this file, 'README.md', for future reference.
+4.  Create a subfolder named the same as the package.
+5.  In that subfolder, create '__init\__.py' file containing the following directive:
+    ```python
+    from .bigtableio import *
+    ```
+6.  In the same subfolder, create '__version\__.py' file specifying the package version:
+    ```python
+    VERSION = (0, 1, 234)
+    __version__ = '.'.join(map(str, VERSION))
+    ```
+7.  Add the source code file(s) to the package subfolder.
+9.  Run the setup file to create the new package tarball:
     ```sh
     $ python setup.py sdist --formats=gztar
     ```
-4.  Install your code in your system, because, your going to use it to run your python dataflow code.
-    ```sh
-    $ pip install beam_bigtable-0.1.1.tar.gz
+10. This will create the installation archive named something like this:
     ```
-5.  Set the arguments in the PipelineOptions
-    Need to use extra_package and setup_file arguments.
-    extra_package set the path of the compress package.
-    setup_file set the file to install this package.
+    my_package-0.1.234.tar.gz
+    ```
+11. If necessary, install the package locally, e.g. by running 'pip install':
+    ```sh
+    $ pip install my_package-0.1.234.tar.gz
+    ```
+12. In order to run an Apache Beam Pipeline, the following PipelineOptions must be set:
     ```python
     [
         '--experiments=beam_fn_api',
-        '--project=grass-clump-479',
+        '--project=my-project-id',
         '--requirements_file=requirements.txt',
         '--runner=dataflow',
-        '--staging_location=gs://juantest/stage',
-        '--temp_location=gs://juantest/temp',
-        '--setup_file=./beam_bigtable/setup.py',
-        '--extra_package=./beam_bigtable/dist/beam_bigtable-0.1.1.tar.gz'
+        '--staging_location=gs://my-storage-folder/stage',
+        '--temp_location=gs://my-storage-folder/temp',
+        '--setup_file=./my_package/setup.py',
+        '--extra_package=./my_package/dist/my_package-0.1.234.tar.gz'
     ]
     ```
+    _*** the 'setup_file' option specifies the package installation file ***_
+
+    _*** the 'extra_package' option provides the path to the compressed archive ***_
+
+    _*** replace 'my-project-id' with the actual project name ***_
+    
+    _*** to run the code locally, change the '--runner' parameter to 'direct' ***_
+    
+    _*** replace 'my-storage-folder' with actual Google Storage folder name ***_
+    
+    _*** replace 'my_package' with the actual package name ***_
+    
 
 ## Contributing changes
 

@@ -7,9 +7,9 @@ import setuptools
 
 NAME = 'beam_bigtable'
 DESCRIPTION = 'Beam Bigtable'
-URL = 'https://github.com/juan-rael/beam_bigtable'
-EMAIL = 'juan@qlogic.io'
-AUTHOR = 'Juan Rael Corrales'
+URL = 'https://github.com/mf2199/beam-MF'
+EMAIL = 'maxim.factourovich@qlogic.io'
+AUTHOR = 'Max Factourovich'
 REQUIRES_PYTHON = '>=2.7.0'
 VERSION = None
 REQUIRED = [
