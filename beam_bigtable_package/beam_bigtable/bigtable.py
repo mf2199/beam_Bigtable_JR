@@ -48,13 +48,12 @@ from apache_beam.transforms.display import DisplayDataItem
 
 try:
   from google.cloud.bigtable import Client
-  from google.cloud.bigtable.row_set import RowSet
   from google.cloud.bigtable.row_set import RowRange
-  # from google.cloud.bigtable_v2.proto.bigtable_pb2 import SampleRowKeysResponse
+  from google.cloud.bigtable.row_set import RowSet
 except ImportError:
   Client = None
 
-__all__ = ['BigtableSource', 'WriteToBigTable']
+__all__ = ['ReadFromBigTable', 'WriteToBigTable']
 
 
 class _BigTableWriteFn(beam.DoFn):
@@ -75,30 +74,30 @@ class _BigTableWriteFn(beam.DoFn):
       table_id(str): GCP Table to write the `DirectRows`
     """
     super(_BigTableWriteFn, self).__init__()
-    self.beam_options = {'project_id': project_id,
-                         'instance_id': instance_id,
-                         'table_id': table_id}
+    self._beam_options = {'project_id': project_id,
+                          'instance_id': instance_id,
+                          'table_id': table_id}
     self.table = None
     self.batcher = None
     self.written = Metrics.counter(self.__class__, 'Written Row')
 
   def __getstate__(self):
-    return self.beam_options
+    return self._beam_options
 
   def __setstate__(self, options):
-    self.beam_options = options
+    self._beam_options = options
     self.table = None
     self.batcher = None
     self.written = Metrics.counter(self.__class__, 'Written Row')
 
   def start_bundle(self):
     if self.table is None:
-      client = Client(project=self.beam_options['project_id'])
-      instance = client.instance(self.beam_options['instance_id'])
-      self.table = instance.table(self.beam_options['table_id'])
+      client = Client(project=self._beam_options['project_id'])
+      instance = client.instance(self._beam_options['instance_id'])
+      self.table = instance.table(self._beam_options['table_id'])
     self.batcher = self.table.mutations_batcher()
 
-  def process(self, row, *args, **kwargs):
+  def process(self, row):
     self.written.inc()
     # You need to set the timestamp in the cells in this row object,
     # when we do a retry we will mutating the same object, but, with this
@@ -115,11 +114,11 @@ class _BigTableWriteFn(beam.DoFn):
     self.batcher = None
 
   def display_data(self):
-    return {'projectId': DisplayDataItem(self.beam_options['project_id'],
+    return {'projectId': DisplayDataItem(self._beam_options['project_id'],
                                          label='Bigtable Project Id'),
-            'instanceId': DisplayDataItem(self.beam_options['instance_id'],
+            'instanceId': DisplayDataItem(self._beam_options['instance_id'],
                                           label='Bigtable Instance Id'),
-            'tableId': DisplayDataItem(self.beam_options['table_id'],
+            'tableId': DisplayDataItem(self._beam_options['table_id'],
                                        label='Bigtable Table Id')
            }
 
@@ -138,21 +137,21 @@ class WriteToBigTable(beam.PTransform):
       table_id(str): GCP Table to write the `DirectRows`
     """
     super(WriteToBigTable, self).__init__()
-    self.beam_options = {'project_id': project_id,
+    self._beam_options = {'project_id': project_id,
                          'instance_id': instance_id,
                          'table_id': table_id}
 
   def expand(self, pvalue):
-    beam_options = self.beam_options
+    beam_options = self._beam_options
     return (pvalue
             | beam.ParDo(_BigTableWriteFn(beam_options['project_id'],
                                           beam_options['instance_id'],
                                           beam_options['table_id'])))
 
 
-class BigtableSource(iobase.BoundedSource):
+class _BigtableSource(iobase.BoundedSource):
   def __init__(self, project_id, instance_id, table_id, filter_=None):
-    """ Constructor of the Read connector of Bigtable
+    """ A BoundedSource for reading from BigTable.
 
     Args:
       project_id: [string] GCP Project of to write the Rows
@@ -161,29 +160,28 @@ class BigtableSource(iobase.BoundedSource):
       filter_: [RowFilter] Filter to apply to columns in a row.
     """
     super(self.__class__, self).__init__()
-    self._init({'project_id': project_id,
+    self._initialize({'project_id': project_id,
                 'instance_id': instance_id,
                 'table_id': table_id,
                 'filter_': filter_})
 
   def __getstate__(self):
-    return self.beam_options
+    return self._beam_options
 
   def __setstate__(self, options):
-    self._init(options)
+    self._initialize(options)
 
-  def _init(self, options):
-    self.beam_options = options
+  def _initialize(self, options):
+    self._beam_options = options
     self.table = None
     self.sample_row_keys = None
     self.row_count = Metrics.counter(self.__class__.__name__, 'Row count')
 
-
   def _get_table(self):
     if self.table is None:
-      self.table = Client(project=self.beam_options['project_id'])\
-                      .instance(self.beam_options['instance_id'])\
-                      .table(self.beam_options['table_id'])
+      self.table = Client(project=self._beam_options['project_id'])\
+                      .instance(self._beam_options['instance_id'])\
+                      .table(self._beam_options['table_id'])
     return self.table
 
   def get_sample_row_keys(self):
@@ -195,13 +193,13 @@ class BigtableSource(iobase.BoundedSource):
     :returns: A cancel-able iterator. Can be consumed by calling ``next()``
     			  or by casting to a :class:`list` and can be cancelled by
     			  calling ``cancel()``.
+
+    ***** NOTE: For unclear reasons, the function returns generator even
+    after wrapping the result as a list. In order to be used as a list, the
+    result should be wrapped as a list AGAIN! E.g., see 'estimate_size()'
     """
     if self.sample_row_keys is None:
       self.sample_row_keys = list(self._get_table().sample_row_keys())
-      if self.sample_row_keys[0].row_key != b'':
-        SampleRowKey = namedtuple("SampleRowKey", "row_key offset_bytes")
-        first_key = SampleRowKey(b'', 0)
-        self.sample_row_keys.insert(0, first_key)
     return self.sample_row_keys
 
   def get_range_tracker(self, start_position=b'', stop_position=b''):
@@ -211,7 +209,7 @@ class BigtableSource(iobase.BoundedSource):
       return LexicographicKeyRangeTracker(start_position, stop_position)
 
   def estimate_size(self):
-    return self.get_sample_row_keys()[-1].offset_bytes
+    return list(self.get_sample_row_keys())[-1].offset_bytes
 
   def split(self, desired_bundle_size, start_position=None, stop_position=None):
     """ Splits the source into a set of bundles, using the row_set if it is set.
@@ -231,44 +229,70 @@ class BigtableSource(iobase.BoundedSource):
     # TODO: Use the desired bundle size to split accordingly
     # TODO: Allow users to provide their own row sets
 
-    sample_row_keys = self.get_sample_row_keys()
+    sample_row_keys = list(self.get_sample_row_keys())
+
+    if len(sample_row_keys) > 1 and sample_row_keys[0].row_key != b'':
+      SampleRowKey = namedtuple("SampleRowKey", "row_key offset_bytes")
+      first_key = SampleRowKey(b'', 0)
+      sample_row_keys.insert(0, first_key)
+      sample_row_keys = list(sample_row_keys)
+
     bundles = []
     for i in range(1, len(sample_row_keys)):
-      key_1 = sample_row_keys[i - 1]
-      key_2 = sample_row_keys[i]
-      size = key_2.offset_bytes - key_1.offset_bytes
-      bundles.append(iobase.SourceBundle(size, self, key_1.row_key, key_2.row_key))
+      key_1 = sample_row_keys[i - 1].row_key
+      key_2 = sample_row_keys[i].row_key
+      size = sample_row_keys[i].offset_bytes - sample_row_keys[i - 1].offset_bytes
+      bundles.append(iobase.SourceBundle(size, self, key_1, key_2))
 
     # Shuffle is needed to allow reading from different locations of the table for better efficiency
     shuffle(bundles)
     return bundles
 
   def read(self, range_tracker):
-    for row in self._get_table().read_rows(start_key=range_tracker.start_position(),
-                                           end_key=range_tracker.stop_position(),
-                                           filter_=self.beam_options['filter_']):
+    rows = self._get_table().read_rows(start_key=range_tracker.start_position(),
+                                       end_key=range_tracker.stop_position(),
+                                       filter_=self._beam_options['filter_'])
+    for row in rows:
       if range_tracker.try_claim(row.row_key):
         self.row_count.inc()
         yield row
       else:
-        # TODO: Modify the client ot be able to cancel read_row request
-        break
+        # Modifying the read_rows() to cancel further requests
+        rows.stop = True
 
   def display_data(self):
-    return {'projectId': DisplayDataItem(self.beam_options['project_id'],
+    return {'projectId': DisplayDataItem(self._beam_options['project_id'],
                                          label='Bigtable Project Id',
                                          key='projectId'),
-            'instanceId': DisplayDataItem(self.beam_options['instance_id'],
+            'instanceId': DisplayDataItem(self._beam_options['instance_id'],
                                           label='Bigtable Instance Id',
                                           key='instanceId'),
-            'tableId': DisplayDataItem(self.beam_options['table_id'],
+            'tableId': DisplayDataItem(self._beam_options['table_id'],
                                        label='Bigtable Table Id',
                                        key='tableId'),
-            'filter_': DisplayDataItem(self.beam_options['filter_'],
+            'filter_': DisplayDataItem(self._beam_options['filter_'],
                                        label='Bigtable Filter',
                                        key='filter_')
             }
 
-  # def to_runner_api_parameter(self, unused_context):
-  #   return 'simple', None
 
+class ReadFromBigTable(beam.PTransform):
+  def __init__(self, project_id, instance_id, table_id):
+    """ The PTransform to access the Bigtable Read connector
+
+    Args:
+      project_id(str): GCP Project of to read the Rows
+      instance_id(str): GCP Instance to read the Rows
+      table_id(str): GCP Table to read the Rows
+    """
+    super(self.__class__, self).__init__()
+    self._beam_options = {'project_id': project_id,
+                         'instance_id': instance_id,
+                         'table_id': table_id}
+
+  def expand(self, pvalue):
+    beam_options = self._beam_options
+    return (pvalue
+            | iobase.Read(_BigtableSource(project_id=beam_options['project_id'],
+                                          instance_id=beam_options['instance_id'],
+                                          table_id=beam_options['table_id'])))
