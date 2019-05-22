@@ -41,6 +41,7 @@ from collections import namedtuple
 from random import shuffle
 
 import apache_beam as beam
+from apache_beam import coders
 from apache_beam.io import iobase
 from apache_beam.io.range_trackers import LexicographicKeyRangeTracker
 from apache_beam.metrics import Metrics
@@ -150,6 +151,133 @@ class WriteToBigTable(beam.PTransform):
                                           beam_options['table_id'])))
 
 
+class _BigtableReadTracker(iobase.RestrictionTracker):
+  """Manages concurrent access to a restriction.
+
+  Experimental; no backwards-compatibility guarantees.
+
+  Keeps track of the restrictions claimed part for a Splittable DoFn.
+
+  See following documents for more details.
+  * https://s.apache.org/splittable-do-fn
+  * https://s.apache.org/splittable-do-fn-python-sdk
+  """
+
+  def current_restriction(self):
+    raise NotImplementedError
+
+  def current_progress(self):
+    """Returns a RestrictionProgress object representing the current progress.
+    """
+    raise NotImplementedError
+
+  def checkpoint(self):
+    """Performs a checkpoint of the current restriction.
+
+    Signals that the current ``DoFn.process()`` call should terminate as soon as
+    possible. After this method returns, the tracker MUST refuse all future
+    claim calls, and ``RestrictionTracker.check_done()`` MUST succeed.
+
+    This invocation modifies the value returned by ``current_restriction()``
+    invocation and returns a restriction representing the rest of the work. The
+    old value of ``current_restriction()`` is equivalent to the new value of
+    ``current_restriction()`` and the return value of this method invocation
+    combined.
+
+    ** Thread safety **
+
+    Methods of the class ``RestrictionTracker`` including this method may get
+    invoked by different threads, hence must be made thread-safe, e.g. by using
+    a single lock object.
+    """
+    raise NotImplementedError
+
+  def check_done(self):
+    """Checks whether the restriction has been fully processed.
+
+    Called by the runner after iterator returned by ``DoFn.process()`` has been
+    fully read.
+
+    This method must raise a `ValueError` if there is still any unclaimed work
+    remaining in the restriction when this method is invoked. Exception raised
+    must have an informative error message.
+
+    ** Thread safety **
+
+    Methods of the class ``RestrictionTracker`` including this method may get
+    invoked by different threads, hence must be made thread-safe, e.g. by using
+    a single lock object.
+
+    Returns: ``True`` if current restriction has been fully processed.
+    Raises:
+      ~exceptions.ValueError: if there is still any unclaimed work remaining.
+    """
+    raise NotImplementedError
+
+
+class _BigtableReadRestrictionProvider(core.RestrictionProvider):
+  """Provides methods for generating and manipulating restrictions.
+
+  This class should be implemented to support Splittable ``DoFn``s in Python
+  SDK. See https://s.apache.org/splittable-do-fn for more details about
+  Splittable ``DoFn``s.
+
+  To denote a ``DoFn`` class to be Splittable ``DoFn``, ``DoFn.process()``
+  method of that class should have exactly one parameter whose default value is
+  an instance of ``RestrictionProvider``.
+
+  The provided ``RestrictionProvider`` instance must provide suitable overrides
+  for the following methods.
+  * create_tracker()
+  * initial_restriction()
+
+  Optionally, ``RestrictionProvider`` may override default implementations of
+  following methods.
+  * restriction_coder()
+  * split()
+
+  ** Pausing and resuming processing of an element **
+
+  As the last element produced by the iterator returned by the
+  ``DoFn.process()`` method, a Splittable ``DoFn`` may return an object of type
+  ``ProcessContinuation``.
+
+  If provided, ``ProcessContinuation`` object specifies that runner should
+  later re-invoke ``DoFn.process()`` method to resume processing the current
+  element and the manner in which the re-invocation should be performed. A
+  ``ProcessContinuation`` object must only be specified as the last element of
+  the iterator. If a ``ProcessContinuation`` object is not provided the runner
+  will assume that the current input element has been fully processed.
+
+  ** Updating output watermark **
+
+  ``DoFn.process()`` method of Splittable ``DoFn``s could contain a parameter
+  with default value ``DoFn.WatermarkReporterParam``. If specified this asks the
+  runner to provide a function that can be used to give the runner a
+  (best-effort) lower bound about the timestamps of future output associated
+  with the current element processed by the ``DoFn``. If the ``DoFn`` has
+  multiple outputs, the watermark applies to all of them. Provided function must
+  be invoked with a single parameter of type ``Timestamp`` or as an integer that
+  gives the watermark in number of seconds.
+  """
+
+  def create_tracker(self, restriction):
+    """Produces a new ``RestrictionTracker`` for the given restriction.
+
+    Args:
+      restriction: an object that defines a restriction as identified by a
+        Splittable ``DoFn`` that utilizes the current ``RestrictionProvider``.
+        For example, a tuple that gives a range of positions for a Splittable
+        ``DoFn`` that reads files based on byte positions.
+    Returns: an object of type ``RestrictionTracker``.
+    """
+    raise NotImplementedError
+
+  def initial_restriction(self, element):
+    """Produces an initial restriction for the given element."""
+    raise NotImplementedError
+
+
 class _BigtableReadFn(beam.DoFn):
   """ Creates the connector that can read rows for Beam pipeline
 
@@ -195,10 +323,13 @@ class _BigtableReadFn(beam.DoFn):
                     .instance(self._beam_options['instance_id'])\
                     .table(self._beam_options['table_id'])
 
-  def process(self, element, *args, **kwargs):
+  def process(self, element, tracker=beam.DoFn.RestrictionTrackerParam):
     for row in self.table.read_rows(self._beam_options['start_key'], self._beam_options['end_key']):
       self.written.inc()
       yield row
+
+  def get_initial_restriction(self, element):
+    pass
 
   def finish_bundle(self):
       pass
