@@ -55,7 +55,8 @@ try:
 except ImportError:
   Client = None
 
-__all__ = ['ReadFromBigTable', 'WriteToBigTable']
+# __all__ = ['ReadFromBigTable', 'WriteToBigTable']
+__all__ = ['ReadFromBigTable', 'WriteToBigTable', '_BigTableWriteFn']
 
 
 class _BigTableWriteFn(beam.DoFn):
@@ -315,7 +316,7 @@ class _BigtableReadFn(beam.DoFn):
     self._beam_options = options
     self.table = None
     self.sample_row_keys = None
-    self.row_count = Metrics.counter(self.__class__.__name__, 'Row count')
+    self.row_count = Metrics.counter(self.__class__.__name__, 'Rows read')
 
   def start_bundle(self):
     if self.table is None:
@@ -323,8 +324,11 @@ class _BigtableReadFn(beam.DoFn):
                     .instance(self._beam_options['instance_id'])\
                     .table(self._beam_options['table_id'])
 
-  def process(self, element, tracker=beam.DoFn.RestrictionTrackerParam):
-    for row in self.table.read_rows(self._beam_options['start_key'], self._beam_options['end_key']):
+  # def process(self, element, tracker=beam.DoFn.RestrictionTrackerParam):
+  def process(self, element, **kwargs):
+    for row in self.table.read_rows(start_key=self._beam_options['start_key'],
+                                    end_key=self._beam_options['end_key'],
+                                    filter_=self._beam_options['filter_']):
       self.written.inc()
       yield row
 

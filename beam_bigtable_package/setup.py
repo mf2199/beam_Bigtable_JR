@@ -5,8 +5,8 @@ import io
 import os
 import setuptools
 
-NAME = 'beam_bigtable'
-DESCRIPTION = 'Beam Bigtable'
+NAME = 'bigtableio'
+DESCRIPTION = 'Apache Beam Read Connector for Bigtable'
 URL = 'https://github.com/mf2199/beam-MF'
 EMAIL = 'maxim.factourovich@qlogic.io'
 AUTHOR = 'Max Factourovich'
