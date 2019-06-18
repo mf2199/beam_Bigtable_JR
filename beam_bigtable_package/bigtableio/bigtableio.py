@@ -239,20 +239,7 @@ class ReadFromBigTable(beam.PTransform):
                          'table_id': table_id,
                          'filter_': filter_}
     self.table = None
-
-  def _get_sample_row_keys(self):
-    """ Get a sample of row keys in the table.
-
-    The returned row keys will delimit contiguous sections of the table of
-    approximately equal size, which can be used to break up the data for
-    distributed tasks like mapreduces.
-    :returns: A cancel-able iterator. Can be consumed by calling ``next()``
-    			  or by casting to a :class:`list` and can be cancelled by
-    			  calling ``cancel()``.
-    """
-    if self.sample_row_keys is None:
-      self.sample_row_keys = list(self._get_table().sample_row_keys())
-    return self.sample_row_keys
+    self.sample_row_keys = None
 
   def expand(self, pbegin):
     beam_options = self._beam_options
@@ -260,16 +247,15 @@ class ReadFromBigTable(beam.PTransform):
       self.table = Client(project=self._beam_options['project_id'])\
                     .instance(self._beam_options['instance_id'])\
                     .table(self._beam_options['table_id'])
-
+    if self.sample_row_keys is None:
+      self.sample_row_keys = list(self.table.sample_row_keys())
 
     def split_source(unused_impulse):
-      sample_row_keys = list(self._get_sample_row_keys())
-
-      if len(sample_row_keys) > 1 and sample_row_keys[0].row_key != b'':
+      if len(self.sample_row_keys) > 1 and self.sample_row_keys[0].row_key != b'':
         SampleRowKey = namedtuple("SampleRowKey", "row_key offset_bytes")
         first_key = SampleRowKey(b'', 0)
-        sample_row_keys.insert(0, first_key)
-        sample_row_keys = list(sample_row_keys)
+        self.sample_row_keys.insert(0, first_key)
+        sample_row_keys = list(self.sample_row_keys)
 
       bundles = []
       for i in range(1, len(sample_row_keys)):
@@ -287,4 +273,5 @@ class ReadFromBigTable(beam.PTransform):
             | 'Split' >> core.FlatMap(split_source)
             | 'Read Bundles' >> beam.ParDo(_BigtableReadFn(project_id=beam_options['project_id'],
                                                            instance_id=beam_options['instance_id'],
-                                                           table_id=beam_options['table_id'])))
+                                                           table_id=beam_options['table_id'],
+                                                           filter_=beam_options['filter_'])))
